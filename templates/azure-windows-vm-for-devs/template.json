@@ -15,9 +15,15 @@
       }
     },
     "userPassword": {
-      "type": "securestring",
+      "type": "string",
       "metadata": {
-        "description": "Password for the Virtual Machine for a local non-admin account."
+        "description": "Password for the Virtual Machine for a local non-admin account. Can't be of type securestring because won't pass to PowerShell then."
+      }
+    },
+    "allowedIPAddresses":{
+      "type": "array",
+      "metadata": {
+        "description": "List of IP addresses that can use RDP to connect to the VM"
       }
     },
     "SKU_name": {
@@ -64,10 +70,7 @@
     "OSDiskName": "[concat(variables('vmName'),'_OsDisk_1_', uniquestring(resourceGroup().id))]",
     "virtualNetworkName": "[concat('MyVNET', variables('suffix_string'))]",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-    "NSG_name": "devVMNSG",
-    "NSG_RDP_allow_IP_addresses": [
-      "100.8.229.98"
-    ]
+    "NSG_name": "devVMNSG"
   },
   "resources": [
     {
@@ -98,7 +101,7 @@
               "access": "Allow",
               "priority": 1000,
               "direction": "Inbound",
-              "sourceAddressPrefixes": "[variables('NSG_RDP_allow_IP_addresses')]"
+              "sourceAddressPrefixes": "[parameters('allowedIPAddresses')]"
             }
           },
           {
@@ -282,7 +285,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File main-control-script.ps1 ','-userPassword ', parameters('userPassword'))]"
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File main-control-script.ps1 -userPassword ', parameters('userPassword'))]"
         }
       }
     }

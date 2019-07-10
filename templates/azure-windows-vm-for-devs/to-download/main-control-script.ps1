@@ -1,7 +1,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [securestring]$userPassword
+    [string]$userPassword
 )
 
 

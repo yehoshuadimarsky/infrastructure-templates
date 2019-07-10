@@ -1,7 +1,7 @@
 # RUN FROM ADMIN POWERSHELL
 param(
     [Parameter(Mandatory=$true)]
-    [securestring]$userPasswordVal
+    [string]$userPasswordVal
 )
 
 # Variables
@@ -25,9 +25,9 @@ Disable-ieESC
 ########## Setup Users ##########
 
 # Create User, add to RDP login group
-Write-Host "Creating local user account..."
-New-LocalUser $localUserName -Password $userPasswordVal
-Write-Host "Adding user to Remote Desktop Users..."
+Write-Host "Creating local user account for '$($localUserName)'..."
+New-LocalUser $localUserName -Password (ConvertTo-SecureString  $userPasswordVal -AsPlainText -Force)
+Write-Host "Adding user '$($localUserName)' to Remote Desktop Users..."
 Add-LocalGroupMember -Name "Remote Desktop Users" -Member $localUserName
 
 
