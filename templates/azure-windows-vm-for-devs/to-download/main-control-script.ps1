@@ -1,4 +1,6 @@
 
+param([securestring]$userPassword)
+
 
 $now = Get-Date -Format "yyyy-MM-ddTHH-mm-ss_ffff"
 $logfile = "$(Get-Location)\PSlogfile_$($now).log"
@@ -7,7 +9,7 @@ $logfile = "$(Get-Location)\PSlogfile_$($now).log"
 function timestamp { Process{"$(Get-Date -Format o): $_"} };
 
 # Run script, with timestamp on each line of output and saved to specified log file
-.\setup_script.ps1 | timestamp *> $logfile
+.\setup_script.ps1 -userPasswordVal $userPassword | timestamp *> $logfile
 
 
 

@@ -14,6 +14,12 @@
         "description": "Password for the Virtual Machine."
       }
     },
+    "userPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the Virtual Machine for a local non-admin account."
+      }
+    },
     "SKU_name": {
       "type": "string",
       "defaultValue": "Standard_D4_v3",
@@ -160,7 +166,7 @@
         "[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
       ],
       "properties": {
-        "enableAcceleratedNetworking" : true,
+        "enableAcceleratedNetworking": true,
         "ipConfigurations": [
           {
             "name": "ipconfig1",
@@ -261,21 +267,22 @@
         "[resourceId('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
       ],
       "properties": {
-          "publisher": "Microsoft.Compute",
-          "type": "CustomScriptExtension",
-          "typeHandlerVersion": "1.7",
-          "autoUpgradeMinorVersion":true,
-          "settings": {
-              "fileUris": [
-                  "https://raw.githubusercontent.com/yehoshuadimarsky/infrastructure-templates/master/templates/azure-windows-vm-for-devs/to-download/choco-packages.config",
-                  "https://raw.githubusercontent.com/yehoshuadimarsky/infrastructure-templates/master/templates/azure-windows-vm-for-devs/to-download/main-control-script.ps1",
-                  "https://raw.githubusercontent.com/yehoshuadimarsky/infrastructure-templates/master/templates/azure-windows-vm-for-devs/to-download/setup_script.ps1"
-
-              ],
-              "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File main-control-script.ps1"
-          }
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.7",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "https://raw.githubusercontent.com/yehoshuadimarsky/infrastructure-templates/master/templates/azure-windows-vm-for-devs/to-download/choco-packages.config",
+            "https://raw.githubusercontent.com/yehoshuadimarsky/infrastructure-templates/master/templates/azure-windows-vm-for-devs/to-download/main-control-script.ps1",
+            "https://raw.githubusercontent.com/yehoshuadimarsky/infrastructure-templates/master/templates/azure-windows-vm-for-devs/to-download/setup_script.ps1"
+          ]
+        },
+        "protectedSettings": {
+          "commandToExecute": "[concat('.exe -ExecutionPolicy Unrestricted -File main-control-script.ps1 ','-userPassword ', parameters('userPassword'))]"
+        }
       }
-  }
+    }
   ],
   "outputs": {
     "hostname": {

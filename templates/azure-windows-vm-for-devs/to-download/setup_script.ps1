@@ -1,5 +1,8 @@
 # RUN FROM ADMIN POWERSHELL
+param([securestring]$userPasswordVal)
 
+# Variables
+$localUserName = "myLocalUser"
 
 # Random
 Write-Host "Changing time zone..."
@@ -14,6 +17,15 @@ function Disable-ieESC {
     Write-Host "IE Enhanced Security Configuration (ESC) has been disabled." -ForegroundColor Green
 }
 Disable-ieESC
+
+
+########## Setup Users ##########
+
+# Create User, add to RDP login group
+Write-Host "Creating local user account..."
+New-LocalUser $localUserName -Password $userPasswordVal
+Write-Host "Adding user to Remote Desktop Users..."
+Add-LocalGroupMember -Name "Remote Desktop Users" -Member $localUserName
 
 
 
