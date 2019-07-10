@@ -8,8 +8,6 @@ param(
 $localUserName = "myLocalUser"
 
 # Random
-Write-Host "Changing time zone..."
-Set-TimeZone -Name "Eastern Standard Time"
 # from https://gist.github.com/danielscholl/bbc18540418e17c39a4292ffcdcc95f0
 function Disable-ieESC {
     $AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
@@ -39,7 +37,9 @@ Add-LocalGroupMember -Name "Remote Desktop Users" -Member $localUserName
 Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # Choco install the apps
-choco install choco-packages.config -y 
+choco install choco-packages-general.config -y 
+choco install choco-packages-msft.config -y 
+choco install choco-packages-python.config -y 
 
 
 

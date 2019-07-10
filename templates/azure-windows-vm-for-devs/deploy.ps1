@@ -8,13 +8,13 @@
 
 # Get configs
 Write-Host "Getting JSON config..."
-$config = Get-Content -Raw -Path .\local.settings.json | ConvertFrom-Json
+$config = Get-Content -Raw -Path .\PSdeploy.parameters.json | ConvertFrom-Json
 
 
 # variables
 $deploymentName="Josh_dev_VM_deployment_" + (Get-Date -Format "FileDateTime")
 $templateFilePath = "template.json"
-$parametersFilePath = "parameters.json"
+$parametersFilePath = "arm.parameters.json"
 
 
 <#
