@@ -1,5 +1,11 @@
 # Windows VM for software development
 
+## Prerequisites
+* AzureRM PowerShell modules installed
+
+## Instructions
+In a PowerShell terminal run the `deploy.ps1` file. Follow the login prompts.
+
 ## Notes
 You will need to create 2 local settings files and save them in this directory.
 
