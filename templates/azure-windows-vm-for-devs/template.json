@@ -267,7 +267,10 @@
           "autoUpgradeMinorVersion":true,
           "settings": {
               "fileUris": [
-                  "<TO REPLACE>"
+                  "https://raw.githubusercontent.com/yehoshuadimarsky/infrastructure-templates/master/templates/azure-windows-vm-for-devs/to-download/choco-packages.config",
+                  "https://raw.githubusercontent.com/yehoshuadimarsky/infrastructure-templates/master/templates/azure-windows-vm-for-devs/to-download/main-control-script.ps1",
+                  "https://raw.githubusercontent.com/yehoshuadimarsky/infrastructure-templates/master/templates/azure-windows-vm-for-devs/to-download/setup_script.ps1"
+
               ],
               "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File main-control-script.ps1"
           }

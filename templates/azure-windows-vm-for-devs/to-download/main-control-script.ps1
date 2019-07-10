@@ -1,7 +1,7 @@
 
 
 $now = Get-Date -Format "yyyy-MM-ddTHH-mm-ss_ffff"
-$logfile = $env:USERPROFILE + "\Desktop\PSlogfile_$($now).log"
+$logfile = "$(Get-Location)\PSlogfile_$($now).log"
 
 # per https://stackoverflow.com/a/27361865/6067848
 function timestamp { Process{"$(Get-Date -Format o): $_"} };
