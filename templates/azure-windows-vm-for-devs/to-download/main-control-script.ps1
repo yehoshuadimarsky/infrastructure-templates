@@ -1,5 +1,8 @@
 
-param([securestring]$userPassword)
+param(
+    [Parameter(Mandatory=$true)]
+    [securestring]$userPassword
+)
 
 
 $now = Get-Date -Format "yyyy-MM-ddTHH-mm-ss_ffff"

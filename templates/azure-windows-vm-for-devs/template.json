@@ -197,6 +197,9 @@
           "vmSize": "[parameters('SKU_name')]"
         },
         "osProfile": {
+          "windowsConfiguration":{
+            "timeZone": "Eastern Standard Time"
+          },
           "computerName": "[variables('vmName')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
@@ -279,7 +282,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat('.exe -ExecutionPolicy Unrestricted -File main-control-script.ps1 ','-userPassword ', parameters('userPassword'))]"
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File main-control-script.ps1 ','-userPassword ', parameters('userPassword'))]"
         }
       }
     }

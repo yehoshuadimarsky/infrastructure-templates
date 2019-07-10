@@ -1,5 +1,8 @@
 # RUN FROM ADMIN POWERSHELL
-param([securestring]$userPasswordVal)
+param(
+    [Parameter(Mandatory=$true)]
+    [securestring]$userPasswordVal
+)
 
 # Variables
 $localUserName = "myLocalUser"
