@@ -6,9 +6,15 @@
     Deploys an Azure Resource Manager template
 #>
 
+param(
+    [string]$credsFile,
+    [string]$configFile="PSdeploy.parameters.json"
+)
+
+
 # Get configs
 Write-Host "Getting JSON config..."
-$config = Get-Content -Raw -Path .\PSdeploy.parameters.json | ConvertFrom-Json
+$config = Get-Content -Raw -Path $configFile | ConvertFrom-Json
 
 
 # variables
@@ -38,7 +44,11 @@ $ErrorActionPreference = "Stop"
 
 # sign in
 Write-Host "Logging in...";
-Login-AzureRmAccount;
+if (!$credsFile) {
+    Login-AzureRmAccount
+} else {
+    Import-AzureRMContext -Path $credsFile
+}
 
 # select subscription
 Write-Host "Selecting subscription '$($config.AzureSubscriptionId)'";
