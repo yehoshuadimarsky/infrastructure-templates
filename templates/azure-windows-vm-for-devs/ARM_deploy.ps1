@@ -85,3 +85,10 @@ if(Test-Path $parametersFilePath) {
 } else {
     New-AzureRmResourceGroupDeployment -ResourceGroupName $config.resourceGroupName -Name $deploymentName -TemplateFile $templateFilePath;
 }
+
+Write-Host "Deployment succeeded!"
+
+# Enable PowerShell remoting
+Write-Host "Invoking 'Run Command' called 'EnableRemotePS' to enable PowerShell remoting..."
+Invoke-AzureRmVMRunCommand -ResourceGroupName $config.resourceGroupName -VMName (Read-Host 'Enter the VM name') -CommandId 'EnableRemotePS' 
+Write-Host "Command 'EnableRemotePS' successfully invoked!"

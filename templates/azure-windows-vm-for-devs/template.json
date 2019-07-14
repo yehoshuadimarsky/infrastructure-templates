@@ -92,20 +92,7 @@
       "properties": {
         "securityRules": [
           {
-            "name": "allow-rdp",
-            "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "3389",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 1000,
-              "direction": "Inbound",
-              "sourceAddressPrefixes": "[parameters('allowedIPAddresses')]"
-            }
-          },
-          {
-            "name": "TLS-allow",
+            "name": "Allow-TLS",
             "properties": {
               "protocol": "TCP",
               "sourcePortRange": "*",
@@ -113,8 +100,34 @@
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 1020,
+              "priority": 1010,
               "direction": "Inbound"
+            }
+          },
+          {
+            "name": "Allow-PowerShell-Remoting",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "5986",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1020,
+              "direction": "Inbound",
+              "sourceAddressPrefixes": "[parameters('allowedIPAddresses')]"
+            }
+          },
+          {
+            "name": "Allow-RDP",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1030,
+              "direction": "Inbound",
+              "sourceAddressPrefixes": "[parameters('allowedIPAddresses')]"
             }
           }
         ]
