@@ -1,15 +1,17 @@
-<#
- .SYNOPSIS
-    Deploys a template to Azure
 
- .DESCRIPTION
-    Deploys an Azure Resource Manager template
-#>
 
 param(
+    [Parameter(HelpMessage = "Path to file of cached Azure creds. To create, run: `Save-AzureRmContext -Profile (Connect-AzureRmAccount) -Path path\to\file")]
     [string]$credsFile,
-    [string]$configFile="PSdeploy.parameters.json"
+
+    [string]$configFile = "PSdeploy.parameters.json",
+    [string]$templateFilePath = "template.json",
+    [string]$parametersFilePath = "arm.parameters.json"
 )
+
+
+# variables
+$deploymentName = "VM_Deployment_" + (Get-Date -Format "FileDateTime")
 
 
 # Get configs
@@ -17,16 +19,7 @@ Write-Host "Getting JSON config..."
 $config = Get-Content -Raw -Path $configFile | ConvertFrom-Json
 
 
-# variables
-$deploymentName="Josh_dev_VM_deployment_" + (Get-Date -Format "FileDateTime")
-$templateFilePath = "template.json"
-$parametersFilePath = "arm.parameters.json"
 
-
-<#
-.SYNOPSIS
-    Registers RPs
-#>
 Function RegisterRP {
     Param(
         [string]$ResourceProviderNamespace
@@ -46,7 +39,8 @@ $ErrorActionPreference = "Stop"
 Write-Host "Logging in...";
 if (!$credsFile) {
     Login-AzureRmAccount
-} else {
+}
+else {
     Import-AzureRMContext -Path $credsFile
 }
 
@@ -55,40 +49,54 @@ Write-Host "Selecting subscription '$($config.AzureSubscriptionId)'";
 Select-AzureRmSubscription -SubscriptionID $config.AzureSubscriptionId;
 
 # Register RPs
-$resourceProviders = @("microsoft.storage","microsoft.network","microsoft.compute");
-if($resourceProviders.length) {
+$resourceProviders = @("microsoft.storage", "microsoft.network", "microsoft.compute");
+if ($resourceProviders.length) {
     Write-Host "Registering resource providers"
-    foreach($resourceProvider in $resourceProviders) {
+    foreach ($resourceProvider in $resourceProviders) {
         RegisterRP($resourceProvider);
     }
 }
 
 # Create or check for existing resource group
 $resourceGroup = Get-AzureRmResourceGroup -Name $config.resourceGroupName -ErrorAction SilentlyContinue
-if(!$resourceGroup)
-{
+if (!$resourceGroup) {
     Write-Host "Resource group '$($config.resourceGroupName)' does not exist. To create a new resource group, please enter a location.";
-    if(!$config.resourceGroupLocation) {
+    if (!$config.resourceGroupLocation) {
         $config.resourceGroupLocation = Read-Host "resourceGroupLocation";
     }
     Write-Host "Creating resource group '$($config.resourceGroupName)' in location '$($config.resourceGroupLocation)'";
     New-AzureRmResourceGroup -Name $config.resourceGroupName -Location $config.resourceGroupLocation
 }
-else{
+else {
     Write-Host "Using existing resource group '$($config.resourceGroupName)'";
 }
 
+# Validate the deployment
+$validationError = (Test-AzureRmResourceGroupDeployment -ResourceGroupName $config.resourceGroupName -TemplateFile $templateFilePath -TemplateParameterFile $parametersFilePath)
+if ($validationError) {
+    Write-Host "Template validation failed with this message(s), exiting now:" -ForegroundColor Red
+    $validationError | foreach { $_.Message, $_.Details }
+    exit
+} 
+
 # Start the deployment
-Write-Host "Starting deployment...";
-if(Test-Path $parametersFilePath) {
+Write-Host "Starting deployment..." -ForegroundColor Yellow
+if (Test-Path $parametersFilePath) {
     New-AzureRmResourceGroupDeployment -ResourceGroupName $config.resourceGroupName -Name $deploymentName -TemplateFile $templateFilePath -TemplateParameterFile $parametersFilePath;
-} else {
+}
+else {
     New-AzureRmResourceGroupDeployment -ResourceGroupName $config.resourceGroupName -Name $deploymentName -TemplateFile $templateFilePath;
 }
 
-Write-Host "Deployment succeeded!"
+Write-Host "Deployment succeeded!" -ForegroundColor Green
+
+# Get deployment outputs
+$deploymentOutputs = (Get-AzureRmResourceGroupDeployment -ResourceGroupName $config.resourceGroupName -Name $deploymentName).Outputs
+$vmName = $deploymentOutputs.vmname.value
 
 # Enable PowerShell remoting
-Write-Host "Invoking 'Run Command' called 'EnableRemotePS' to enable PowerShell remoting..."
-Invoke-AzureRmVMRunCommand -ResourceGroupName $config.resourceGroupName -VMName (Read-Host 'Enter the VM name') -CommandId 'EnableRemotePS' 
-Write-Host "Command 'EnableRemotePS' successfully invoked!"
+Write-Host "Invoking 'Run Command' called 'EnableRemotePS' to enable PowerShell remoting..." -ForegroundColor Yellow
+Invoke-AzureRmVMRunCommand -ResourceGroupName $config.resourceGroupName -VMName $vmName -CommandId 'EnableRemotePS' 
+Write-Host "Command 'EnableRemotePS' successfully invoked!" -ForegroundColor Yellow
+
+Invoke-Expression -Command ".\post-deploy.ps1 -deploymentName $deploymentName"
