@@ -1,0 +1,7 @@
+{
+    "AzureSubscriptionId": "AzureSubscriptionId",
+    "resourceGroupName": "resourceGroupName",
+    "resourceGroupLocation": "eastus",
+    "localUserName": "localUserName",
+    "localUserPassword": "localUserPassword!"
+}

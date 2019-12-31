@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "adminUsername": {
@@ -14,12 +14,6 @@
         "description": "Password for the Virtual Machine."
       }
     },
-    "userPassword": {
-      "type": "string",
-      "metadata": {
-        "description": "Password for the Virtual Machine for a local non-admin account. Can't be of type securestring because won't pass to PowerShell then."
-      }
-    },
     "allowedIPAddresses": {
       "type": "array",
       "metadata": {
@@ -31,6 +25,13 @@
       "defaultValue": "Standard_D4_v3",
       "metadata": {
         "description": "The SKU/size of the VM"
+      }
+    },
+    "prefix_string": {
+      "type": "string",
+      "defaultValue": "azprefix",
+      "metadata": {
+        "description": "Prefix string to add to the name of all (most) resources created in this deployment"
       }
     },
     "dnsLabelPrefix": {
@@ -59,18 +60,17 @@
     }
   },
   "variables": {
-    "suffix_string": "devvm",
-    "storageAccountName": "[concat(uniquestring(resourceGroup().id), variables('suffix_string'))]",
-    "nicName": "[concat('VMNic', variables('suffix_string'))]",
+    "storageAccountName": "[uniquestring(resourceGroup().id)]",
+    "nicName": "[concat(parameters('prefix_string'),'NIC')]",
     "addressPrefix": "10.0.0.0/16",
-    "subnetName": "Subnet",
+    "subnetName": "Subnet1",
     "subnetPrefix": "10.0.0.0/24",
-    "publicIPAddressName": "myPublicIP",
-    "vmName": "[concat('VM', variables('suffix_string'))]",
+    "publicIPAddressName": "[concat(parameters('prefix_string'),'PublicIP')]",
+    "vmName": "[concat(parameters('prefix_string'),'VM')]",
     "OSDiskName": "[concat(variables('vmName'),'_OsDisk_1_', uniquestring(resourceGroup().id))]",
-    "virtualNetworkName": "[concat('MyVNET', variables('suffix_string'))]",
+    "virtualNetworkName": "[concat(parameters('prefix_string'),'VNet')]",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-    "NSG_name": "devVMNSG"
+    "NSG_name": "[concat(parameters('prefix_string'),'NSG')]"
   },
   "resources": [
     {
@@ -92,29 +92,42 @@
       "properties": {
         "securityRules": [
           {
-            "name": "allow-rdp",
+            "name": "Allow-PowerShell-Remoting",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "5986",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1020,
+              "direction": "Inbound",
+              "sourceAddressPrefixes": "[parameters('allowedIPAddresses')]"
+            }
+          },
+          {
+            "name": "Allow-RDP",
             "properties": {
               "protocol": "TCP",
               "sourcePortRange": "*",
               "destinationPortRange": "3389",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 1000,
+              "priority": 1030,
               "direction": "Inbound",
               "sourceAddressPrefixes": "[parameters('allowedIPAddresses')]"
             }
           },
           {
-            "name": "TLS-allow",
+            "name": "Allow-SSH",
             "properties": {
               "protocol": "TCP",
               "sourcePortRange": "*",
-              "destinationPortRange": "990",
-              "sourceAddressPrefix": "*",
+              "destinationPortRange": "22",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 1020,
-              "direction": "Inbound"
+              "priority": 1040,
+              "direction": "Inbound",
+              "sourceAddressPrefixes": "[parameters('allowedIPAddresses')]"
             }
           }
         ]
@@ -126,7 +139,7 @@
       "name": "[variables('publicIPAddressName')]",
       "location": "[parameters('location')]",
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
         "dnsSettings": {
           "domainNameLabel": "[parameters('dnsLabelPrefix')]"
         }
@@ -246,8 +259,9 @@
         "publisher": "Microsoft.Azure.Security",
         "type": "IaaSAntimalware",
         "typeHandlerVersion": "1.3",
+        "autoUpgradeMinorVersion": true,
         "settings": {
-          "AntimalwareEnabled": "true",
+          "AntimalwareEnabled": true,
           "Exclusions": {
             "Paths": "C:\\Users",
             "Extensions": ".txt",
@@ -269,6 +283,10 @@
     "hostname": {
       "type": "string",
       "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
+    },
+    "vmname": {
+      "type": "string",
+      "value": "[variables('vmName')]"
     }
   }
 }
